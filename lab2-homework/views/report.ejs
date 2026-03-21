@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raport kosmiczny</title>
+</head>
+<body>
+  <h1>Raport kosmiczny: stan teraz + nadchodzące starty</h1>
+
+  <p>
+    <strong>Uwaga:</strong>
+    raport łączy dane z różnych momentów czasu:
+    liczba astronautów dotyczy chwili obecnej,
+    a starty rakiet to wydarzenia zaplanowane.
+  </p>
+
+  <h2>Część 1: Stan obecny (Open Notify)</h2>
+  <p>Liczba osób w kosmosie teraz: <strong><%= totalPeople %></strong></p>
+
+  <h3>Astronauci według statku (po filtrze)</h3>
+  <ul>
+    <% for (const [craft, count] of Object.entries(craftStats)) { %>
+      <li><%= craft %>: <%= count %></li>
+    <% } %>
+  </ul>
+
+  <h2>Część 2: Nadchodzące starty (Launch Library 2)</h2>
+  <p>Najpopularniejsza lokalizacja startów: <strong><%= mostCommonLocation %></strong></p>
+  <p>Średnia liczba nadchodzących startów na dzień: <strong><%= avgLaunchesPerDay %></strong></p>
+
+  <table border="1" cellpadding="6">
+    <thead>
+      <tr>
+        <th>Nazwa startu</th>
+        <th>Data</th>
+        <th>Agencja</th>
+        <th>Lokalizacja</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% launches.forEach((launch) => { %>
+        <tr>
+          <td><%= launch.name %></td>
+          <td><%= launch.window_start %></td>
+          <td><%= launch.launch_service_provider?.name || 'Brak danych' %></td>
+          <td><%= launch.pad?.location?.name || 'Brak danych' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <p><a href="/">Wróć do formularza</a></p>
+</body>
+</html>
