@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sr.grpc.gen";
+option java_outer_classname = "LogisticsProto";
+
+package logistics;
+
+enum VehicleType {
+  UNKNOWN = 0;
+  DELIVERY_VAN = 1;
+  HEAVY_TRUCK = 2;
+  CARGO_PLANE = 3;
+}
+
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+  string city = 3;
+  string area_code = 4;
+}
+
+message SubscriptionRequest {
+  string client_id = 1;
+  string subscription_id = 2;
+  VehicleType type_filter = 3;
+  repeated string area_codes = 4;
+}
+
+message UnsubscribeRequest {
+  string client_id = 1;
+  string subscription_id = 2;
+}
+
+message UnsubscribeResponse {
+  bool removed = 1;
+  string message = 2;
+}
+
+message TransportEvent {
+  string event_id = 1;
+  string shipment_id = 2;
+  VehicleType vehicle = 3;
+  Location current_location = 4;
+  repeated string status_history = 5;
+  int64 event_unix_time = 6;
+
+  oneof alert {
+    string delay_reason = 7;
+    int32 sensor_threshold = 8;
+    string security_alert = 9;
+  }
+}
+
+service LogisticsMonitor {
+  rpc SubscribeTransport(SubscriptionRequest) returns (stream TransportEvent);
+  rpc UnsubscribeTransport(UnsubscribeRequest) returns (UnsubscribeResponse);
+}
