@@ -1,41 +1,56 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kosmiczny Analizator REST</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kosmiczny Analizator REST</title>
 </head>
 <body>
-    <h1>Panel Dowodzenia Kosmicznego</h1>
-    <hr>
+  <h1>Panel raportu kosmicznego</h1>
+  <hr />
 
-    <h3>Analiza aktywności orbitalnej</h3>
-    <p>Ten formularz wysyła zapytanie do lokalnego serwisu REST, który pobiera dane z Open Notify oraz Launch Library.</p>
+  <h2>Wygeneruj raport: stan teraz + nadchodzące starty</h2>
+  <p>
+    Raport łączy dwa typy danych:
+    aktualną liczbę osób w kosmosie
+    oraz zaplanowane starty rakiet.
+  </p>
 
-    <!-- Formularz wysyła dane metodą POST do Twojego endpointu -->
-    <form action="/api/space-summary" method="POST">
-        
-        <label for="daysLimit">Zakres analizy startów (w dniach):</label><br>
-        <input type="number" id="daysLimit" name="daysLimit" min="1" max="365" value="30" required>
-        <p><small>Serwer obliczy średnią liczbę startów na dzień w tym okresie.</small></p>
+  <form action="/api/space-summary" method="POST">
+    <label for="daysLimit">Ile dni analizować nadchodzące starty rakiet?</label><br />
+    <input
+      type="number"
+      id="daysLimit"
+      name="daysLimit"
+      min="1"
+      max="365"
+      value="30"
+      required
+    />
+    <p><small>Przykład: 30 oznacza analizę planowanych startów z najbliższych 30 dni.</small></p>
 
-        <br>
+    <label for="minAstronauts">Pokaż tylko statki z co najmniej tyloma astronautami:</label><br />
+    <input
+      type="number"
+      id="minAstronauts"
+      name="minAstronauts"
+      min="0"
+      value="1"
+      required
+    />
+    <p><small>Przykład: 2 ukryje statki, na których jest tylko 1 astronauta.</small></p>
 
-        <label for="minAstronauts">Minimalna liczba astronautów (walidacja):</label><br>
-        <input type="number" id="minAstronauts" name="minAstronauts" min="0" value="1">
-        <p><small>Dodatkowy parametr do lokalnej obróbki (np. filtracja statków).</small></p>
+    <button type="submit">Generuj raport</button>
+  </form>
 
-        <br>
+  <hr />
+  <h3>Informacje techniczne</h3>
+  <ul>
+    <li>Metoda: <strong>POST</strong></li>
+    <li>Endpoint: <strong>/api/space-summary</strong></li>
+    <li>Format: <strong>application/x-www-form-urlencoded</strong></li>
+  </ul>
 
-        <button type="submit">Generuj raport kosmiczny</button>
-    </form>
-
-    <hr>
-    <h4>Wymagania techniczne:</h4>
-    <ul>
-        <li>Metoda: <strong>POST</strong></li>
-        <li>Endpoint: <code>/api/space-summary</code></li>
-        <li>Format danych: application/x-www-form-urlencoded</li>
-    </ul>
+  <p><a href="/api-docs">Dokumentacja API (Swagger)</a></p>
 </body>
 </html>
