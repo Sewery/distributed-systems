@@ -22,7 +22,7 @@ public class Z1_Consumer {
 
         // queue
         String QUEUE_NAME = "queue1";
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+        channel.queueDeclare(QUEUE_NAME, true, false, false, null);
 
         // consumer (handle msg)
         Consumer consumer = new DefaultConsumer(channel) {

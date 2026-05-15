@@ -1,34 +1,46 @@
+import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class Z1_Producer {
+public class Z2_Producer {
+
+    // ============================================================
+    // Zmień typ Exchange:
+    //   BuiltinExchangeType.DIRECT
+    //   BuiltinExchangeType.TOPIC
+    // ============================================================
+    private static final BuiltinExchangeType EXCHANGE_TYPE = BuiltinExchangeType.TOPIC;
+    private static final String EXCHANGE_NAME = "exchange_topic"; // zmień nazwę przy zmianie typu!
 
     public static void main(String[] argv) throws Exception {
 
-        // info
-        System.out.println("Z1 PRODUCER");
+        System.out.println("Z2 PRODUCER | type=" + EXCHANGE_TYPE);
 
-        // connection & channel
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        // queue
-        String QUEUE_NAME = "queue1";
-        channel.queueDeclare(QUEUE_NAME, false, false, false, null);        
+        channel.exchangeDeclare(EXCHANGE_NAME, EXCHANGE_TYPE);
 
-        // producer (publish msg)
-        String message = "Hello world!";
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
-        System.out.println("Sent: " + message);
+        while (true) {
+            System.out.print("Enter routing key: ");
+            String key = br.readLine();
+            if ("exit".equals(key)) break;
 
-        // close
+            System.out.print("Enter message: ");
+            String message = br.readLine();
+            if ("exit".equals(message)) break;
+
+            channel.basicPublish(EXCHANGE_NAME, key, null, message.getBytes("UTF-8"));
+            System.out.println("Sent [key=" + key + "]: " + message);
+        }
+
         channel.close();
         connection.close();
     }
