@@ -1,0 +1,97 @@
+# Klaster Ray dla zadania Tier 2 (DFS):
+#   - 1 head node z dashboardem
+#   - N worker nodes (domyślnie 2, sterowane przez NUM_WORKERS w .env)
+#   - 1 kontener jupyter z notebookiem, podłączony jako Ray client do head node
+#
+# Start:   docker compose up --build
+# Stop:    docker compose down
+# Logs:    docker compose logs -f ray-head
+
+services:
+  ray-head:
+    build:
+      context: .
+      args:
+        RAY_VERSION: ${RAY_VERSION}
+        PY_VERSION: ${PY_VERSION}
+    image: tier2-ray:${RAY_VERSION}
+    container_name: ray-head
+    ports:
+      - "${DASHBOARD_PORT}:${DASHBOARD_PORT}"   # Ray dashboard
+      - "${GCS_PORT}:${GCS_PORT}"               # GCS / cluster join
+      - "${CLIENT_PORT}:${CLIENT_PORT}"         # Ray client (port 10001)
+    env_file:
+      - .env
+    command:
+      - bash
+      - -c
+      - >-
+        ray start --head
+        --port=${GCS_PORT}
+        --dashboard-host=0.0.0.0
+        --dashboard-port=${DASHBOARD_PORT}
+        --ray-client-server-port=${CLIENT_PORT}
+        --num-cpus=${NUM_CPU_HEAD}
+        --block
+    shm_size: '2gb'
+    networks:
+      - ray_net
+
+  ray-worker:
+    image: tier2-ray:${RAY_VERSION}
+    depends_on:
+      - ray-head
+    env_file:
+      - .env
+    command:
+      - bash
+      - -c
+      - >-
+        echo "waiting for ray-head:${GCS_PORT}..." ;
+        until (echo > /dev/tcp/ray-head/${GCS_PORT}) 2>/dev/null; do sleep 1; done ;
+        echo "ray-head reachable, joining cluster" ;
+        ray start
+        --address=ray-head:${GCS_PORT}
+        --num-cpus=${NUM_CPU_WORKER}
+        --block
+    shm_size: '2gb'
+    deploy:
+      mode: replicated
+      replicas: ${NUM_WORKERS}
+    networks:
+      - ray_net
+
+  jupyter:
+    image: tier2-ray:${RAY_VERSION}
+    depends_on:
+      - ray-head
+    container_name: ray-jupyter
+    ports:
+      - "${JUPYTER_PORT}:8888"
+    env_file:
+      - .env
+    environment:
+      RAY_ADDRESS: "ray://ray-head:${CLIENT_PORT}"
+    volumes:
+      - ./notebooks:/home/ray/notebooks
+    working_dir: /home/ray/notebooks
+    command:
+      - bash
+      - -c
+      - >-
+        echo "waiting for ray-head:${CLIENT_PORT} (Ray Client)..." ;
+        until (echo > /dev/tcp/ray-head/${CLIENT_PORT}) 2>/dev/null; do sleep 1; done ;
+        echo "Ray Client server reachable, starting JupyterLab" ;
+        jupyter lab
+        --ip=0.0.0.0
+        --port=8888
+        --no-browser
+        --ServerApp.token=raylab
+        --ServerApp.root_dir=/home/ray/notebooks
+        --ServerApp.allow_origin='*'
+    networks:
+      - ray_net
+
+networks:
+  ray_net:
+    driver: bridge
