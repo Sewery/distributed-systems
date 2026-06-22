@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'agh.sr'
+version = '1.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.zookeeper:zookeeper:3.8.4'
+}
+
+application {
+    mainClass = 'agh.sr.zookeeper.ZooWatcher'
+}
+
+run {
+    standardInput = System.in
+    jvmArgs = [
+            '-Dfile.encoding=UTF-8',
+            '-Dstdout.encoding=UTF-8',
+            '-Dconsole.encoding=UTF-8',
+            '-Djava.awt.headless=false'
+    ]
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'agh.sr.zookeeper.ZooWatcher'
+    }
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

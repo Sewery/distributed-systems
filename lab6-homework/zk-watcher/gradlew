@@ -1,0 +1,9 @@
+#!/bin/sh
+# Gradle wrapper script (Unix)
+# Pobierz pełny plik z: https://github.com/gradle/gradle/blob/master/gradlew
+
+GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
+JAVA_HOME="${JAVA_HOME:-}"
+
+exec java -cp "$GRADLE_USER_HOME/wrapper/dists/gradle-8.5-bin/*/gradle-8.5/lib/gradle-launcher-8.5.jar" \
+    org.gradle.launcher.GradleMain "$@"
